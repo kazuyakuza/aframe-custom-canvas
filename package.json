@@ -1,8 +1,8 @@
 {
-  "name": "aframe",
-  "version": "1.4.2",
-  "description": "A web framework for building virtual reality experiences.",
-  "homepage": "https://aframe.io/",
+  "name": "aframe-custom-canvas",
+  "version": "1.4.2c0",
+  "description": "A web framework for building virtual reality experiences. (CHANGES: force aframe to use a custom canvas)",
+  "homepage": "https://github.com/kazuyakuza/aframe-custom-canvas",
   "main": "dist/aframe-master.js",
   "scripts": {
     "dev": "cross-env INSPECTOR_VERSION=dev webpack serve --port 8080",
@@ -15,7 +15,7 @@
     "lint": "semistandard -v | snazzy",
     "lint:fix": "semistandard --fix",
     "prepush": "node scripts/testOnlyCheck.js",
-    "prerelease": "node scripts/release.js 1.4.1 1.4.2",
+    "prerelease": "node scripts/release.js 1.4.2 1.4.2c0",
     "start": "npm run dev",
     "start:https": "npm run dev -- --server-type https",
     "test": "karma start ./tests/karma.conf.js",
@@ -25,7 +25,7 @@
     "test:nobrowser": "NO_BROWSER=true npm test",
     "test:node": "mocha --ui tdd tests/node"
   },
-  "repository": "aframevr/aframe",
+  "repository": "kazuyakuza/aframe-custom-canvas",
   "license": "MIT",
   "files": [
     "dist/*",

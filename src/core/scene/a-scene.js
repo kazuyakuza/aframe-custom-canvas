@@ -728,7 +728,7 @@ class AScene extends AEntity {
     }
 
     // [INTERATICA-BEGIN]
-    // we added next line to pass canvas and context created by g-map lib as configuration for the 3js renderer
+    // we added next line to pass canvas and context created by g-map lib as configuration for the 3js' renderer
     rendererConfig = this.appendRendererCustomConfig(rendererConfig);
     // [INTERATICA-END]
 
@@ -1025,10 +1025,15 @@ function setupCanvas(sceneEl) {
   // we changed above line with the below line, so AFrame uses the canvas created by g-map lib
   canvasEl = document.getElementsByTagName("canvas")[0];
   // [INTERATICA-END]
+
   canvasEl.classList.add("a-canvas");
   // Mark canvas as provided/injected by A-Frame.
   canvasEl.dataset.aframeCanvas = true;
-  sceneEl.appendChild(canvasEl);
+
+  // [INTERATICA-BEGIN]
+  // we commented below line, because AFrame must use the canvas created by g-map lib
+  // sceneEl.appendChild(canvasEl);
+  // [INTERATICA-END]
 
   document.addEventListener("fullscreenchange", onFullScreenChange);
   document.addEventListener("mozfullscreenchange", onFullScreenChange);
