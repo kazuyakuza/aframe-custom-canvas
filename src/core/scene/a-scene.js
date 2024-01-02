@@ -60,6 +60,7 @@ class AScene extends AEntity {
     self.systems = {};
     self.systemNames = [];
     self.time = self.delta = 0;
+    self.usedOfferSession = false;
 
     self.behaviors = { tick: [], tock: [] };
     self.hasLoaded = false;
@@ -93,11 +94,11 @@ class AScene extends AEntity {
     var embedded = this.hasAttribute("embedded");
 
     // Default components.
-    this.setAttribute("inspector", "");
-    this.setAttribute("keyboard-shortcuts", "");
-    this.setAttribute("screenshot", "");
-    this.setAttribute("vr-mode-ui", "");
-    this.setAttribute("device-orientation-permission-ui", "");
+    this.setAttribute('inspector', '');
+    this.setAttribute('keyboard-shortcuts', '');
+    this.setAttribute('screenshot', '');
+    this.setAttribute('xr-mode-ui', '');
+    this.setAttribute('device-orientation-permission-ui', '');
     super.connectedCallback();
 
     // Renderer initialization
@@ -315,16 +316,16 @@ class AScene extends AEntity {
    * @param {bool?} useAR - if true, try immersive-ar mode
    * @returns {Promise}
    */
-  enterVR(useAR) {
+  enterVR (useAR, useOfferSession) {
     var self = this;
     var vrDisplay;
     var vrManager = self.renderer.xr;
     var xrInit;
 
     // Don't enter VR if already in VR.
-    if (this.is("vr-mode")) {
-      return Promise.resolve("Already in VR.");
-    }
+    if (useOfferSession && (!navigator.xr || !navigator.xr.offerSession)) { return Promise.resolve('OfferSession is not supported.'); }
+    if (self.usedOfferSession && useOfferSession) { return Promise.resolve('OfferSession was already called.'); }
+    if (this.is('vr-mode')) { return Promise.resolve('Already in VR.'); }
 
     // Has VR.
     if (this.checkHeadsetConnected() || this.isMobile) {
@@ -341,11 +342,17 @@ class AScene extends AEntity {
         var xrMode = useAR ? "immersive-ar" : "immersive-vr";
         xrInit = this.sceneEl.systems.webxr.sessionConfiguration;
         return new Promise(function (resolve, reject) {
-          navigator.xr.requestSession(xrMode, xrInit).then(
-            function requestSuccess(xrSession) {
+          var requestSession = useOfferSession ? navigator.xr.offerSession.bind(navigator.xr) : navigator.xr.requestSession.bind(navigator.xr);
+          self.usedOfferSession |= useOfferSession;
+          requestSession(xrMode, xrInit).then(
+            function requestSuccess (xrSession) {
               self.xrSession = xrSession;
-              vrManager.layersEnabled =
-                xrInit.requiredFeatures.indexOf("layers") !== -1;
+
+              if (useOfferSession) {
+                self.usedOfferSession = false;
+              }
+
+              vrManager.layersEnabled = xrInit.requiredFeatures.indexOf('layers') !== -1;
               vrManager.setSession(xrSession).then(function () {
                 vrManager.setFoveation(rendererSystem.foveationLevel);
               });
@@ -353,12 +360,10 @@ class AScene extends AEntity {
               xrSession.addEventListener("end", self.exitVRBound);
               enterVRSuccess(resolve);
             },
-            function requestFail(error) {
-              var useAR = xrMode === "immersive-ar";
-              var mode = useAR ? "AR" : "VR";
-              throw new Error(
-                "Failed to enter " + mode + " mode (`requestSession`) " + error
-              );
+            function requestFail (error) {
+              var useAR = xrMode === 'immersive-ar';
+              var mode = useAR ? 'AR' : 'VR';
+              reject(new Error('Failed to enter ' + mode + ' mode (`requestSession`)', { cause: error }));
             }
           );
         });
@@ -715,6 +720,10 @@ class AScene extends AEntity {
 
       if (rendererAttr.alpha) {
         rendererConfig.alpha = rendererAttr.alpha === "true";
+      }
+
+      if (rendererAttr.multiviewStereo) {
+        rendererConfig.multiviewStereo = rendererAttr.multiviewStereo === 'true';
       }
 
       this.maxCanvasSize = {
