@@ -1,38 +1,30 @@
-var registerSystem = require("../core/system").registerSystem;
-var utils = require("../utils/");
-var THREE = require("../lib/three");
+var registerSystem = require('../core/system').registerSystem;
+var utils = require('../utils/');
+var THREE = require('../lib/three');
 
 var debug = utils.debug;
-var warn = debug("components:renderer:warn");
+var warn = debug('components:renderer:warn');
 
 /**
  * Determines state of various renderer properties.
  */
-module.exports.System = registerSystem("renderer", {
+module.exports.System = registerSystem('renderer', {
   schema: {
-    antialias: { default: "auto", oneOf: ["true", "false", "auto"] },
-    highRefreshRate: { default: utils.device.isOculusBrowser() },
-    logarithmicDepthBuffer: {
-      default: "auto",
-      oneOf: ["true", "false", "auto"],
-    },
-    maxCanvasWidth: { default: 1920 },
-    maxCanvasHeight: { default: 1920 },
-    physicallyCorrectLights: { default: false },
-    exposure: {
-      default: 1,
-      if: { toneMapping: ["ACESFilmic", "linear", "reinhard", "cineon"] },
-    },
-    toneMapping: {
-      default: "no",
-      oneOf: ["no", "ACESFilmic", "linear", "reinhard", "cineon"],
-    },
-    precision: { default: "high", oneOf: ["high", "medium", "low"] },
-    anisotropy: { default: 1 },
-    sortTransparentObjects: { default: false },
-    colorManagement: { default: true },
-    alpha: { default: true },
-    foveationLevel: { default: 1 },
+    antialias: {default: 'auto', oneOf: ['true', 'false', 'auto']},
+    highRefreshRate: {default: utils.device.isOculusBrowser()},
+    logarithmicDepthBuffer: {default: 'auto', oneOf: ['true', 'false', 'auto']},
+    maxCanvasWidth: {default: 1920},
+    maxCanvasHeight: {default: 1920},
+    multiviewStereo: {default: false},
+    physicallyCorrectLights: {default: false},
+    exposure: {default: 1, if: {toneMapping: ['ACESFilmic', 'linear', 'reinhard', 'cineon']}},
+    toneMapping: {default: 'no', oneOf: ['no', 'ACESFilmic', 'linear', 'reinhard', 'cineon']},
+    precision: {default: 'high', oneOf: ['high', 'medium', 'low']},
+    anisotropy: {default: 1},
+    sortTransparentObjects: {default: false},
+    colorManagement: {default: true},
+    alpha: {default: true},
+    foveationLevel: {default: 1}
   },
 
   init: function () {
@@ -44,10 +36,12 @@ module.exports.System = registerSystem("renderer", {
     // This is the rendering engine, such as THREE.js so copy over any persistent properties from the rendering system.
     var renderer = sceneEl.renderer;
 
-    // [INTERATICA-BEGIN]
-    // renderer.useLegacyLights = !data.physicallyCorrectLights;
-    // [INTERATICA-END]
-    renderer.toneMapping = THREE[toneMappingName + "ToneMapping"];
+    if (!data.physicallyCorrectLights) {
+      // [INTERATICA-BEGIN]
+      // renderer.useLegacyLights = !data.physicallyCorrectLights;
+      // [INTERATICA-END]
+    }
+    renderer.toneMapping = THREE[toneMappingName + 'ToneMapping'];
     THREE.Texture.DEFAULT_ANISOTROPY = data.anisotropy;
 
     THREE.ColorManagement.enabled = data.colorManagement;
@@ -55,13 +49,13 @@ module.exports.System = registerSystem("renderer", {
       ? THREE.SRGBColorSpace
       : THREE.LinearSRGBColorSpace;
 
-    if (sceneEl.hasAttribute("antialias")) {
+    if (sceneEl.hasAttribute('antialias')) {
       warn(
         'Component `antialias` is deprecated. Use `renderer="antialias: true"` instead.'
       );
     }
 
-    if (sceneEl.hasAttribute("logarithmicDepthBuffer")) {
+    if (sceneEl.hasAttribute('logarithmicDepthBuffer')) {
       warn(
         'Component `logarithmicDepthBuffer` is deprecated. Use `renderer="logarithmicDepthBuffer: true"` instead.'
       );
@@ -79,7 +73,7 @@ module.exports.System = registerSystem("renderer", {
     var toneMappingName =
       this.data.toneMapping.charAt(0).toUpperCase() +
       this.data.toneMapping.slice(1);
-    renderer.toneMapping = THREE[toneMappingName + "ToneMapping"];
+    renderer.toneMapping = THREE[toneMappingName + 'ToneMapping'];
     renderer.toneMappingExposure = data.exposure;
     renderer.xr.setFoveation(data.foveationLevel);
 
@@ -107,7 +101,7 @@ module.exports.System = registerSystem("renderer", {
     var data = this.data;
     var rates = xrSession.supportedFrameRates;
     if (rates && xrSession.updateTargetFrameRate) {
-      let targetRate;
+      var targetRate;
       if (rates.includes(90)) {
         targetRate = data.highRefreshRate ? 90 : 72;
       } else {
@@ -115,14 +109,14 @@ module.exports.System = registerSystem("renderer", {
       }
       xrSession.updateTargetFrameRate(targetRate).catch(function (error) {
         console.warn(
-          "failed to set target frame rate of " +
+          'failed to set target frame rate of ' +
             targetRate +
-            ". Error info: " +
+            '. Error info: ' +
             error
         );
       });
     }
-  },
+  }
 });
 
 // Custom A-Frame sort functions.
@@ -135,7 +129,7 @@ module.exports.System = registerSystem("renderer", {
 // - sort front-to-back by z-depth from camera (this should minimize overdraw)
 // - otherwise leave objects in default order (object tree order)
 
-function sortFrontToBack(a, b) {
+function sortFrontToBack (a, b) {
   if (a.groupOrder !== b.groupOrder) {
     return a.groupOrder - b.groupOrder;
   }
@@ -148,7 +142,7 @@ function sortFrontToBack(a, b) {
 // Default sort for transparent objects:
 // - respect groupOrder & renderOrder settings
 // - otherwise leave objects in default order (object tree order)
-function sortRenderOrderOnly(a, b) {
+function sortRenderOrderOnly (a, b) {
   if (a.groupOrder !== b.groupOrder) {
     return a.groupOrder - b.groupOrder;
   }
@@ -159,7 +153,7 @@ function sortRenderOrderOnly(a, b) {
 // - respect groupOrder & renderOrder settings
 // - sort back-to-front by z-depth from camera
 // - otherwise leave objects in default order (object tree order)
-function sortBackToFront(a, b) {
+function sortBackToFront (a, b) {
   if (a.groupOrder !== b.groupOrder) {
     return a.groupOrder - b.groupOrder;
   }

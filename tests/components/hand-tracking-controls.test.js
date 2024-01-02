@@ -65,6 +65,20 @@ suite('tracked-controls-webxr', function () {
     });
   });
 
+  suite('children entities', function () {
+    test('attached to the wrist joint', function (done) {
+      var boxEl = document.createElement('a-box');
+      el.addEventListener('child-attached', function () {
+        assert.ok(el.components['hand-tracking-controls'].wristObject3D);
+        assert.equal(boxEl.object3D.parent, el.components['hand-tracking-controls'].wristObject3D);
+        done();
+      });
+      el.setAttribute('hand-tracking-controls', {hand: 'left'});
+      el.components['hand-tracking-controls'].checkIfControllerPresent();
+      el.appendChild(boxEl);
+    });
+  });
+
   suite('emit events', function () {
     test('pinchstarted', function () {
       const emitSpy = sinon.spy(el, 'emit');
@@ -86,6 +100,7 @@ suite('tracked-controls-webxr', function () {
       el.components['hand-tracking-controls'].checkIfControllerPresent();
       el.components['hand-tracking-controls'].isPinched = true;
       thumbMatrix.setPosition(0, 0, 10);
+      el.components['hand-tracking-controls'].pinchDistance = 1;
       el.components['hand-tracking-controls'].tick();
       el.components['hand-tracking-controls'].detectPinch();
       assert.equal(emitSpy.getCalls()[0].args[0], 'pinchended');
@@ -97,4 +112,3 @@ suite('tracked-controls-webxr', function () {
     });
   });
 });
-
