@@ -1,6 +1,6 @@
 {
   "name": "aframe-custom-canvas",
-  "version": "1.5.0c0",
+  "version": "1.5.0c1",
   "description": "A web framework for building virtual reality experiences. (CHANGES: force aframe to use a custom canvas)",
   "homepage": "https://github.com/kazuyakuza/aframe-custom-canvas",
   "main": "dist/aframe-master.js",
@@ -15,7 +15,7 @@
     "lint": "standardx -v | snazzy",
     "lint:fix": "standardx --fix",
     "prepush": "node scripts/testOnlyCheck.js",
-    "prerelease": "node scripts/release.js 1.4.0 1.5.0c0",
+    "prerelease": "node scripts/release.js 1.5.0c0 1.5.0c1",
     "start": "npm run dev",
     "start:https": "npm run dev -- --server-type https",
     "test": "karma start ./tests/karma.conf.js",
