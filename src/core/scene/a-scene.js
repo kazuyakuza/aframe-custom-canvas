@@ -42,6 +42,9 @@ class AScene extends AEntity {
     var self;
     super();
     self = this;
+    // [INTERATICA-BEGIN] props def
+    self.useExternalCanvas = false;
+    // [INTERATICA-END]
     self.clock = new THREE.Clock();
     self.isIOS = isIOS;
     self.isMobile = isMobile;
@@ -1030,7 +1033,6 @@ function exitFullscreen() {
 // [INTERATICA-BEGIN] set/get-canvas
 // when the custom attribute 'use-external-canvas' is enabled, then we query for the canvas html elem
 // otherwise, runs the default AFrame code and creates a canvas
-useExternalCanvas = false;
 function getCanvasHTMLElem(sceneEl) {
   const USE_EXTERNAL_CANVAS = sceneEl.getAttribute('use-external-canvas');
   let canvasEl;
