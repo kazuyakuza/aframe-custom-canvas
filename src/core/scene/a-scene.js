@@ -1069,7 +1069,7 @@ function setupCanvas(sceneEl) {
 
   // [INTERATICA-BEGIN] append-canvas
   // we conditionally run below line, because AFrame must use the canvas specified canvas when useExternalCanvas is enabled
-  if (!this.useExternalCanvas) sceneEl.appendChild(canvasEl);
+  if (!sceneEl.useExternalCanvas) sceneEl.appendChild(canvasEl);
   // [INTERATICA-END]
 
   document.addEventListener("fullscreenchange", onFullScreenChange);
