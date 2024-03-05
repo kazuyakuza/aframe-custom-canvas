@@ -3,8 +3,15 @@
 In order to use this library with g-maps library with webgl option, we changed from aframe next points:
 
 - instead of create a canvas, find the available canvas
-- don't renderer the scene/entities. This is handled outside, inside a function that executes when the g-maps ondraw triggers.
-- added public option to force configuration into the THREE.WebGLRenderer.
+- don't renderer the scene/entities. This is handled outside, inside a function that executes when the g-maps ondraw triggers
+- added public option to force configuration into the THREE.WebGLRenderer
+- all of this is optional by configuring the a-scene use-external-canvas attribute:
+```
+<a-scene use-external-canvas="true"> // <== tries to find and use the canvas by html tag name
+<a-scene use-external-canvas="{{css selector}}"> // <== tries to find and use the canvas with the css selector
+<a-scene use-external-canvas="false"> // <== AFrame normal behaviour (ie. creates a canvas internally)
+<a-scene> // <== AFrame normal behaviour (ie. creates a canvas internally)
+```
 
 Note: you could find changes with between the annotations "[INTERATICA-BEGIN]" & "[INTERATICA-END]".
 
