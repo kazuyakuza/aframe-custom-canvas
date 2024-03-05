@@ -28488,15 +28488,15 @@ function getCanvasHTMLElem(sceneEl) {
   const USE_EXTERNAL_CANVAS = sceneEl.getAttribute('use-external-canvas');
   let canvasEl;
   if (USE_EXTERNAL_CANVAS === true || USE_EXTERNAL_CANVAS === 'true') {
-    this.useExternalCanvas = true;
+    sceneEl.useExternalCanvas = true;
     canvasEl = document.getElementsByTagName('canvas')[0];
   }
   if (!canvasEl && typeof USE_EXTERNAL_CANVAS === 'string' && USE_EXTERNAL_CANVAS !== 'false' && USE_EXTERNAL_CANVAS.length) {
-    this.useExternalCanvas = true;
+    sceneEl.useExternalCanvas = true;
     canvasEl = document.querySelector(USE_EXTERNAL_CANVAS);
   }
   if (!canvasEl) {
-    this.useExternalCanvas = false;
+    sceneEl.useExternalCanvas = false;
     canvasEl = document.createElement('canvas');
   }
   return canvasEl;
@@ -30829,7 +30829,7 @@ __webpack_require__(/*! ./core/a-mixin */ "./src/core/a-mixin.js");
 // Extras.
 __webpack_require__(/*! ./extras/components/ */ "./src/extras/components/index.js");
 __webpack_require__(/*! ./extras/primitives/ */ "./src/extras/primitives/index.js");
-console.log('A-Frame Version: 1.5.0c6 (Date 2024-03-05, Commit #6290c0d9)');
+console.log('A-Frame Version: 1.5.0c6 (Date 2024-03-05, Commit #d0eedd5a)');
 console.log('THREE Version (https://github.com/supermedium/three.js):', pkg.dependencies['super-three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
 module.exports = window.AFRAME = {
