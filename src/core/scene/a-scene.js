@@ -1027,6 +1027,33 @@ function exitFullscreen() {
   }
 }
 
+// [INTERATICA-BEGIN] set/get-canvas
+// when the custom attribute 'use-external-canvas' is enabled, then we query for the canvas html elem
+// otherwise, runs the default AFrame code and creates a canvas
+useExternalCanvas = false;
+function getCanvasHTMLElem(sceneEl) {
+  const USE_EXTERNAL_CANVAS = sceneEl.getAttribute('use-external-canvas');
+  let canvasEl;
+  if (USE_EXTERNAL_CANVAS === true
+    || USE_EXTERNAL_CANVAS === 'true') {
+    this.useExternalCanvas = true;
+    canvasEl = document.getElementsByTagName('canvas')[0];
+  }
+  if (!canvasEl
+    && typeof (USE_EXTERNAL_CANVAS) === 'string'
+    && USE_EXTERNAL_CANVAS !== 'false'
+    && USE_EXTERNAL_CANVAS.length) {
+    this.useExternalCanvas = true;
+    canvasEl = document.querySelector(USE_EXTERNAL_CANVAS);
+  }
+  if (!canvasEl) {
+    this.useExternalCanvas = false;
+    canvasEl = document.createElement('canvas');
+  }
+  return canvasEl;
+}
+// [INTERATICA-END]
+
 function setupCanvas(sceneEl) {
   var canvasEl;
 
@@ -1073,33 +1100,6 @@ function setupCanvas(sceneEl) {
     document.body.focus();
   }
 }
-
-// [INTERATICA-BEGIN] set/get-canvas
-// when the custom attribute 'use-external-canvas' is enabled, then we query for the canvas html elem
-// otherwise, runs the default AFrame code and creates a canvas
-useExternalCanvas = false;
-function getCanvasHTMLElem(sceneEl) {
-  const USE_EXTERNAL_CANVAS = sceneEl.getAttribute('use-external-canvas');
-  let canvasEl;
-  if (USE_EXTERNAL_CANVAS === true
-    || USE_EXTERNAL_CANVAS === 'true') {
-    this.useExternalCanvas = true;
-    canvasEl = document.getElementsByTagName('canvas')[0];
-  }
-  if (!canvasEl
-    && typeof (USE_EXTERNAL_CANVAS) === 'string'
-    && USE_EXTERNAL_CANVAS !== 'false'
-    && USE_EXTERNAL_CANVAS.length) {
-    this.useExternalCanvas = true;
-    canvasEl = document.querySelector(USE_EXTERNAL_CANVAS);
-  }
-  if (!canvasEl) {
-    this.useExternalCanvas = false;
-    canvasEl = document.createElement('canvas');
-  }
-  return canvasEl;
-}
-// [INTERATICA-END]
 
 module.exports.setupCanvas = setupCanvas;
 module.exports.AScene = AScene;
