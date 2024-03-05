@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * Extended tests and examples available at https://github.com/devpaul/aframeCC-experiments.git
+ * Extended tests and examples available at https://github.com/devpaul/aframe-experiments.git
  */
 
 import * as anime from "animejs";
@@ -381,7 +381,7 @@ export type ShaderDefinition<T extends object = MinimalShaderDefinition & object
 export type SystemDefinition<T extends object = object> = T & Partial<System>;
 
 // root export
-export interface AFrameCC {
+export interface AFrame {
   AComponent: Component;
   AEntity: Entity;
   ANode: ANode;
@@ -426,55 +426,55 @@ export interface AFrameCC {
 }
 
 // module.exports
-export const AComponent: AFrameCC["AComponent"];
-export const AEntity: AFrameCC["AEntity"];
-export const ANode: AFrameCC["ANode"];
-export const AScene: AFrameCC["AScene"];
-export const components: AFrameCC["components"];
-export const geometries: AFrameCC["geometries"];
-export const primitives: AFrameCC["primitives"];
-export const scenes: AFrameCC["scenes"];
-export const schema: AFrameCC["schema"];
-export const shaders: AFrameCC["shaders"];
-export const systems: AFrameCC["systems"];
-export const THREE: AFrameCC["THREE"];
-export const ANIME: AFrameCC["ANIME"];
-export const utils: AFrameCC["utils"];
-export const version: AFrameCC["version"];
-export const registerComponent: AFrameCC["registerComponent"];
-export const registerElement: AFrameCC["registerElement"];
-export const registerGeometry: AFrameCC["registerGeometry"];
-export const registerPrimitive: AFrameCC["registerPrimitive"];
-export const registerShader: AFrameCC["registerShader"];
-export const registerSystem: AFrameCC["registerSystem"];
+export const AComponent: AFrame["AComponent"];
+export const AEntity: AFrame["AEntity"];
+export const ANode: AFrame["ANode"];
+export const AScene: AFrame["AScene"];
+export const components: AFrame["components"];
+export const geometries: AFrame["geometries"];
+export const primitives: AFrame["primitives"];
+export const scenes: AFrame["scenes"];
+export const schema: AFrame["schema"];
+export const shaders: AFrame["shaders"];
+export const systems: AFrame["systems"];
+export const THREE: AFrame["THREE"];
+export const ANIME: AFrame["ANIME"];
+export const utils: AFrame["utils"];
+export const version: AFrame["version"];
+export const registerComponent: AFrame["registerComponent"];
+export const registerElement: AFrame["registerElement"];
+export const registerGeometry: AFrame["registerGeometry"];
+export const registerPrimitive: AFrame["registerPrimitive"];
+export const registerShader: AFrame["registerShader"];
+export const registerSystem: AFrame["registerSystem"];
 
 // global exports
 declare global {
   var hasNativeWebVRImplementation: boolean;
 
-  namespace AFRAMECC {
-    const AComponent: AFrameCC["AComponent"];
-    const AEntity: AFrameCC["AEntity"];
-    const ANode: AFrameCC["ANode"];
-    const AScene: AFrameCC["AScene"];
-    const components: AFrameCC["components"];
-    const geometries: AFrameCC["geometries"];
-    const primitives: AFrameCC["primitives"];
-    const scenes: AFrameCC["scenes"];
-    const schema: AFrameCC["schema"];
-    const shaders: AFrameCC["shaders"];
-    const systems: AFrameCC["systems"];
-    const THREE: AFrameCC["THREE"];
-    const ANIME: AFrameCC["ANIME"];
-    const utils: AFrameCC["utils"];
+  namespace AFrame {
+    const AComponent: AFrame["AComponent"];
+    const AEntity: AFrame["AEntity"];
+    const ANode: AFrame["ANode"];
+    const AScene: AFrame["AScene"];
+    const components: AFrame["components"];
+    const geometries: AFrame["geometries"];
+    const primitives: AFrame["primitives"];
+    const scenes: AFrame["scenes"];
+    const schema: AFrame["schema"];
+    const shaders: AFrame["shaders"];
+    const systems: AFrame["systems"];
+    const THREE: AFrame["THREE"];
+    const ANIME: AFrame["ANIME"];
+    const utils: AFrame["utils"];
     const version: string;
 
-    const registerComponent: AFrameCC["registerComponent"];
-    const registerElement: AFrameCC["registerElement"];
-    const registerGeometry: AFrameCC["registerGeometry"];
-    const registerPrimitive: AFrameCC["registerPrimitive"];
-    const registerShader: AFrameCC["registerShader"];
-    const registerSystem: AFrameCC["registerSystem"];
+    const registerComponent: AFrame["registerComponent"];
+    const registerElement: AFrame["registerElement"];
+    const registerGeometry: AFrame["registerGeometry"];
+    const registerPrimitive: AFrame["registerPrimitive"];
+    const registerShader: AFrame["registerShader"];
+    const registerSystem: AFrame["registerSystem"];
   }
 
   /**
