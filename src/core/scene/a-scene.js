@@ -1038,18 +1038,18 @@ function getCanvasHTMLElem(sceneEl) {
   let canvasEl;
   if (USE_EXTERNAL_CANVAS === true
     || USE_EXTERNAL_CANVAS === 'true') {
-    this.useExternalCanvas = true;
+    sceneEl.useExternalCanvas = true;
     canvasEl = document.getElementsByTagName('canvas')[0];
   }
   if (!canvasEl
     && typeof (USE_EXTERNAL_CANVAS) === 'string'
     && USE_EXTERNAL_CANVAS !== 'false'
     && USE_EXTERNAL_CANVAS.length) {
-    this.useExternalCanvas = true;
+    sceneEl.useExternalCanvas = true;
     canvasEl = document.querySelector(USE_EXTERNAL_CANVAS);
   }
   if (!canvasEl) {
-    this.useExternalCanvas = false;
+    sceneEl.useExternalCanvas = false;
     canvasEl = document.createElement('canvas');
   }
   return canvasEl;
