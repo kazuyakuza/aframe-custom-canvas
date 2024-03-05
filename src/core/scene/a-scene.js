@@ -316,7 +316,7 @@ class AScene extends AEntity {
    * @param {bool?} useAR - if true, try immersive-ar mode
    * @returns {Promise}
    */
-  enterVR (useAR, useOfferSession) {
+  enterVR(useAR, useOfferSession) {
     var self = this;
     var vrDisplay;
     var vrManager = self.renderer.xr;
@@ -345,7 +345,7 @@ class AScene extends AEntity {
           var requestSession = useOfferSession ? navigator.xr.offerSession.bind(navigator.xr) : navigator.xr.requestSession.bind(navigator.xr);
           self.usedOfferSession |= useOfferSession;
           requestSession(xrMode, xrInit).then(
-            function requestSuccess (xrSession) {
+            function requestSuccess(xrSession) {
               self.xrSession = xrSession;
 
               if (useOfferSession) {
@@ -360,7 +360,7 @@ class AScene extends AEntity {
               xrSession.addEventListener("end", self.exitVRBound);
               enterVRSuccess(resolve);
             },
-            function requestFail (error) {
+            function requestFail(error) {
               var useAR = xrMode === 'immersive-ar';
               var mode = useAR ? 'AR' : 'VR';
               reject(new Error('Failed to enter ' + mode + ' mode (`requestSession`)', { cause: error }));
@@ -478,8 +478,8 @@ class AScene extends AEntity {
         this.xrSession.removeEventListener("end", this.exitVRBound);
         // Capture promise to avoid errors.
         this.xrSession.end().then(
-          function () {},
-          function () {}
+          function () { },
+          function () { }
         );
         this.xrSession = undefined;
       } else {
@@ -736,9 +736,9 @@ class AScene extends AEntity {
       };
     }
 
-    // [INTERATICA-BEGIN]
-    // we added next line to pass canvas and context created by g-map lib as configuration for the 3js' renderer
-    rendererConfig = this.appendRendererCustomConfig(rendererConfig);
+    // [INTERATICA-BEGIN] apply-render-config
+    // we add next line to set an external created canvas and context configuration for the 3js' renderer
+    if (this.useExternalCanvas) rendererConfig = this.appendRendererCustomConfig(rendererConfig);
     // [INTERATICA-END]
 
     renderer = this.renderer = new THREE.WebGLRenderer(rendererConfig);
@@ -752,9 +752,10 @@ class AScene extends AEntity {
     });
   }
 
-  // [INTERATICA-BEGIN]
+  // [INTERATICA-BEGIN] merge-render-config
   rendererCustomConfig;
-  // we added above line to set externally the renderer custom configuration. And below line is called before AFrame creates the renderer
+  // we added above line to externally set a renderer custom configuration
+  // Below line is called in setupRenderer method, before AFrame creates the renderer
   appendRendererCustomConfig(rendererConfig) {
     return {
       ...rendererConfig,
@@ -799,10 +800,10 @@ class AScene extends AEntity {
           vrManager.enabled = true;
           sceneEl.enterVR();
         }
-        // [INTERATICA-BEGIN]
-        // we commented next line because the render cycle depends on the webgl update of the g-map lib
-        // renderer.setAnimationLoop(this.render);
-        // TODO we still need to check if the next 2 lines below require changes
+        // [INTERATICA-BEGIN] not-anim-loop
+        // when an external custom canvas is used, the renderer loop is called externally
+        if (!this.useExternalCanvas) renderer.setAnimationLoop(this.render);
+        // TODO we still need to check if the next 2 code lines below require changes
         // [INTERATICA-END]
         sceneEl.renderStarted = true;
         sceneEl.emit("renderstart");
@@ -902,9 +903,9 @@ class AScene extends AEntity {
       savedBackground = this.object3D.background;
       this.object3D.background = null;
     }
-    // [INTERATICA-BEGIN]
-    // we commented next line because the render cycle depends on the webgl update of the g-map lib
-    // renderer.render(this.object3D, this.camera);
+    // [INTERATICA-BEGIN] call-render
+    // when an external custom canvas is used, the renderer loop is called externally
+    if (!this.useExternalCanvas) renderer.render(this.object3D, this.camera);
     // [INTERATICA-END]
     if (savedBackground) {
       this.object3D.background = savedBackground;
@@ -1029,19 +1030,17 @@ function exitFullscreen() {
 function setupCanvas(sceneEl) {
   var canvasEl;
 
-  // [INTERATICA-BEGIN]
-  // canvasEl = document.createElement('canvas');
-  // we changed above line with the below line, so AFrame uses the canvas created by g-map lib
-  canvasEl = document.getElementsByTagName("canvas")[0];
+  // [INTERATICA-BEGIN] call getCanvasHTMLElem
+  canvasEl = getCanvasHTMLElem(sceneEl);
   // [INTERATICA-END]
 
   canvasEl.classList.add("a-canvas");
   // Mark canvas as provided/injected by A-Frame.
   canvasEl.dataset.aframeCanvas = true;
 
-  // [INTERATICA-BEGIN]
-  // we commented below line, because AFrame must use the canvas created by g-map lib
-  // sceneEl.appendChild(canvasEl);
+  // [INTERATICA-BEGIN] append-canvas
+  // we conditionally run below line, because AFrame must use the canvas specified canvas when useExternalCanvas is enabled
+  if (!this.useExternalCanvas) sceneEl.appendChild(canvasEl);
   // [INTERATICA-END]
 
   document.addEventListener("fullscreenchange", onFullScreenChange);
@@ -1074,6 +1073,33 @@ function setupCanvas(sceneEl) {
     document.body.focus();
   }
 }
+
+// [INTERATICA-BEGIN] set/get-canvas
+// when the custom attribute 'use-external-canvas' is enabled, then we query for the canvas html elem
+// otherwise, runs the default AFrame code and creates a canvas
+useExternalCanvas = false;
+function getCanvasHTMLElem(sceneEl) {
+  const USE_EXTERNAL_CANVAS = sceneEl.getAttribute('use-external-canvas');
+  let canvasEl;
+  if (USE_EXTERNAL_CANVAS === true
+    || USE_EXTERNAL_CANVAS === 'true') {
+    this.useExternalCanvas = true;
+    canvasEl = document.getElementsByTagName('canvas')[0];
+  }
+  if (!canvasEl
+    && typeof (USE_EXTERNAL_CANVAS) === 'string'
+    && USE_EXTERNAL_CANVAS !== 'false'
+    && USE_EXTERNAL_CANVAS.length) {
+    this.useExternalCanvas = true;
+    canvasEl = document.querySelector(USE_EXTERNAL_CANVAS);
+  }
+  if (!canvasEl) {
+    this.useExternalCanvas = false;
+    canvasEl = document.createElement('canvas');
+  }
+  return canvasEl;
+}
+// [INTERATICA-END]
 
 module.exports.setupCanvas = setupCanvas;
 module.exports.AScene = AScene;

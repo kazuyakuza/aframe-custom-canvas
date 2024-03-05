@@ -6,7 +6,7 @@ require('@ungap/custom-elements');
 // WebVR polyfill
 // Check before the polyfill runs.
 window.hasNativeWebVRImplementation = !!window.navigator.getVRDisplays ||
-                                      !!window.navigator.getVRDevices;
+  !!window.navigator.getVRDevices;
 window.hasNativeWebXRImplementation = navigator.xr !== undefined;
 
 // If native WebXR or WebVR are defined WebVRPolyfill does not initialize.
@@ -39,10 +39,10 @@ var error = debug('A-Frame:error');
 var warn = debug('A-Frame:warn');
 
 if (window.document.currentScript && window.document.currentScript.parentNode !==
-    window.document.head && !window.debug) {
+  window.document.head && !window.debug) {
   warn('Put the A-Frame <script> tag in the <head> of the HTML *before* the scene to ' +
-       'ensure everything for A-Frame is properly registered before they are used from ' +
-       'HTML.');
+    'ensure everything for A-Frame is properly registered before they are used from ' +
+    'HTML.');
 }
 
 // Error if not using a server.
@@ -92,9 +92,9 @@ require('./core/a-mixin');
 require('./extras/components/');
 require('./extras/primitives/');
 
-console.log('A-Frame Version: 1.5.0c3 (Date 2024-01-05, Commit #f2fa6299)');
+console.log('A-Frame Version: 1.5.0c4 (Date 2024-03-05, Commit #d72ad766)');
 console.log('THREE Version (https://github.com/supermedium/three.js):',
-            pkg.dependencies['super-three']);
+  pkg.dependencies['super-three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
 
 module.exports = window.AFRAME = {

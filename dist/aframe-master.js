@@ -28204,9 +28204,9 @@ class AScene extends AEntity {
       };
     }
 
-    // [INTERATICA-BEGIN]
-    // we added next line to pass canvas and context created by g-map lib as configuration for the 3js' renderer
-    rendererConfig = this.appendRendererCustomConfig(rendererConfig);
+    // [INTERATICA-BEGIN] apply-render-config
+    // we add next line to set an external created canvas and context configuration for the 3js' renderer
+    if (this.useExternalCanvas) rendererConfig = this.appendRendererCustomConfig(rendererConfig);
     // [INTERATICA-END]
 
     renderer = this.renderer = new THREE.WebGLRenderer(rendererConfig);
@@ -28219,9 +28219,10 @@ class AScene extends AEntity {
     });
   }
 
-  // [INTERATICA-BEGIN]
+  // [INTERATICA-BEGIN] merge-render-config
   rendererCustomConfig;
-  // we added above line to set externally the renderer custom configuration. And below line is called before AFrame creates the renderer
+  // we added above line to externally set a renderer custom configuration
+  // Below line is called in setupRenderer method, before AFrame creates the renderer
   appendRendererCustomConfig(rendererConfig) {
     return {
       ...rendererConfig,
@@ -28264,10 +28265,10 @@ class AScene extends AEntity {
           vrManager.enabled = true;
           sceneEl.enterVR();
         }
-        // [INTERATICA-BEGIN]
-        // we commented next line because the render cycle depends on the webgl update of the g-map lib
-        // renderer.setAnimationLoop(this.render);
-        // TODO we still need to check if the next 2 lines below require changes
+        // [INTERATICA-BEGIN] not-anim-loop
+        // when an external custom canvas is used, the renderer loop is called externally
+        if (!this.useExternalCanvas) renderer.setAnimationLoop(this.render);
+        // TODO we still need to check if the next 2 code lines below require changes
         // [INTERATICA-END]
         sceneEl.renderStarted = true;
         sceneEl.emit("renderstart");
@@ -28365,9 +28366,9 @@ class AScene extends AEntity {
       savedBackground = this.object3D.background;
       this.object3D.background = null;
     }
-    // [INTERATICA-BEGIN]
-    // we commented next line because the render cycle depends on the webgl update of the g-map lib
-    // renderer.render(this.object3D, this.camera);
+    // [INTERATICA-BEGIN] call-render
+    // when an external custom canvas is used, the renderer loop is called externally
+    if (!this.useExternalCanvas) renderer.render(this.object3D, this.camera);
     // [INTERATICA-END]
     if (savedBackground) {
       this.object3D.background = savedBackground;
@@ -28479,19 +28480,17 @@ function exitFullscreen() {
 function setupCanvas(sceneEl) {
   var canvasEl;
 
-  // [INTERATICA-BEGIN]
-  // canvasEl = document.createElement('canvas');
-  // we changed above line with the below line, so AFrame uses the canvas created by g-map lib
-  canvasEl = document.getElementsByTagName("canvas")[0];
+  // [INTERATICA-BEGIN] call getCanvasHTMLElem
+  canvasEl = getCanvasHTMLElem(sceneEl);
   // [INTERATICA-END]
 
   canvasEl.classList.add("a-canvas");
   // Mark canvas as provided/injected by A-Frame.
   canvasEl.dataset.aframeCanvas = true;
 
-  // [INTERATICA-BEGIN]
-  // we commented below line, because AFrame must use the canvas created by g-map lib
-  // sceneEl.appendChild(canvasEl);
+  // [INTERATICA-BEGIN] append-canvas
+  // we conditionally run below line, because AFrame must use the canvas specified canvas when useExternalCanvas is enabled
+  if (!this.useExternalCanvas) sceneEl.appendChild(canvasEl);
   // [INTERATICA-END]
 
   document.addEventListener("fullscreenchange", onFullScreenChange);
@@ -28522,6 +28521,30 @@ function setupCanvas(sceneEl) {
     document.body.focus();
   }
 }
+
+// [INTERATICA-BEGIN] set/get-canvas
+// when the custom attribute 'use-external-canvas' is enabled, then we query for the canvas html elem
+// otherwise, runs the default AFrame code and creates a canvas
+useExternalCanvas = false;
+function getCanvasHTMLElem(sceneEl) {
+  const USE_EXTERNAL_CANVAS = sceneEl.getAttribute('use-external-canvas');
+  let canvasEl;
+  if (USE_EXTERNAL_CANVAS === true || USE_EXTERNAL_CANVAS === 'true') {
+    this.useExternalCanvas = true;
+    canvasEl = document.getElementsByTagName('canvas')[0];
+  }
+  if (!canvasEl && typeof USE_EXTERNAL_CANVAS === 'string' && USE_EXTERNAL_CANVAS !== 'false' && USE_EXTERNAL_CANVAS.length) {
+    this.useExternalCanvas = true;
+    canvasEl = document.querySelector(USE_EXTERNAL_CANVAS);
+  }
+  if (!canvasEl) {
+    this.useExternalCanvas = false;
+    canvasEl = document.createElement('canvas');
+  }
+  return canvasEl;
+}
+// [INTERATICA-END]
+
 module.exports.setupCanvas = setupCanvas;
 module.exports.AScene = AScene;
 
@@ -30804,7 +30827,7 @@ __webpack_require__(/*! ./core/a-mixin */ "./src/core/a-mixin.js");
 // Extras.
 __webpack_require__(/*! ./extras/components/ */ "./src/extras/components/index.js");
 __webpack_require__(/*! ./extras/primitives/ */ "./src/extras/primitives/index.js");
-console.log('A-Frame Version: 1.5.0c3 (Date 2024-01-05, Commit #f2fa6299)');
+console.log('A-Frame Version: 1.5.0c4 (Date 2024-03-05, Commit #d72ad766)');
 console.log('THREE Version (https://github.com/supermedium/three.js):', pkg.dependencies['super-three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
 module.exports = window.AFRAME = {
@@ -33055,10 +33078,11 @@ module.exports.System = registerSystem('renderer', {
     // This is the rendering engine, such as THREE.js so copy over any persistent properties from the rendering system.
     var renderer = sceneEl.renderer;
     if (!data.physicallyCorrectLights) {
-      // [INTERATICA-BEGIN]
-      // renderer.useLegacyLights = !data.physicallyCorrectLights;
+      // [INTERATICA-BEGIN] legacy-lights
+      if (!sceneEl.useExternalCanvas) renderer.useLegacyLights = !data.physicallyCorrectLights;
       // [INTERATICA-END]
     }
+
     renderer.toneMapping = THREE[toneMappingName + 'ToneMapping'];
     THREE.Texture.DEFAULT_ANISOTROPY = data.anisotropy;
     THREE.ColorManagement.enabled = data.colorManagement;
@@ -47526,7 +47550,7 @@ class WorkerPool {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"aframe-custom-canvas","version":"1.5.0c3","description":"A web framework for building virtual reality experiences. (CHANGES: force aframe to use a custom canvas)","homepage":"https://github.com/kazuyakuza/aframe-custom-canvas","main":"dist/aframe-master.js","scripts":{"dev":"cross-env INSPECTOR_VERSION=dev webpack serve --port 8080","dist":"node scripts/updateVersionLog.js && npm run dist:min && npm run dist:max","dist:max":"webpack --config webpack.config.js","dist:min":"webpack --config webpack.prod.config.js","docs":"markserv --dir docs --port 9001","preghpages":"node ./scripts/preghpages.js","ghpages":"ghpages -p gh-pages/","lint":"standardx -v | snazzy","lint:fix":"standardx --fix","prepush":"node scripts/testOnlyCheck.js","prerelease":"node scripts/release.js 1.5.0c2 1.5.0c3","start":"npm run dev","start:https":"npm run dev -- --server-type https","test":"karma start ./tests/karma.conf.js","test:docs":"node scripts/docsLint.js","test:firefox":"npm test -- --browsers Firefox","test:chrome":"npm test -- --browsers Chrome","test:nobrowser":"NO_BROWSER=true npm test","test:node":"mocha --ui tdd tests/node"},"repository":"kazuyakuza/aframe-custom-canvas","license":"MIT","files":["dist/*","docs/**/*","src/**/*","vendor/**/*","index.d.ts"],"dependencies":{"@ungap/custom-elements":"^1.1.0","buffer":"^6.0.3","custom-event-polyfill":"^1.0.6","debug":"ngokevin/debug#noTimestamp","deep-assign":"^2.0.0","load-bmfont":"^1.2.3","object-assign":"^4.0.1","present":"0.0.6","promise-polyfill":"^3.1.0","super-animejs":"^3.1.0","super-three":"0.160.0","three-bmfont-text":"dmarcos/three-bmfont-text#eed4878795be9b3e38cf6aec6b903f56acd1f695","webvr-polyfill":"^0.10.12"},"devDependencies":{"@babel/core":"^7.17.10","babel-loader":"^8.2.5","babel-plugin-istanbul":"^6.1.1","chai":"^4.3.6","chai-shallow-deep-equal":"^1.4.0","chalk":"^1.1.3","cross-env":"^7.0.3","css-loader":"^6.7.1","eslint":"^8.45.0","eslint-config-semistandard":"^17.0.0","eslint-config-standard-jsx":"^11.0.0","ghpages":"0.0.8","git-rev":"^0.2.1","glob":"^8.0.3","husky":"^0.11.7","jsdom":"^20.0.0","karma":"^6.4.0","karma-chai-shallow-deep-equal":"0.0.4","karma-chrome-launcher":"^3.1.1","karma-coverage":"^2.2.0","karma-env-preprocessor":"^0.1.1","karma-firefox-launcher":"^2.1.2","karma-mocha":"^2.0.1","karma-mocha-reporter":"^2.2.5","karma-sinon-chai":"^2.0.2","karma-webpack":"^5.0.0","markserv":"github:sukima/markserv#feature/fix-broken-websoketio-link","mocha":"^10.0.0","replace-in-file":"^2.5.3","shelljs":"^0.7.7","shx":"^0.2.2","sinon":"<12.0.0","sinon-chai":"^3.7.0","snazzy":"^5.0.0","standardx":"^7.0.0","style-loader":"^3.3.1","too-wordy":"ngokevin/too-wordy","webpack":"^5.73.0","webpack-cli":"^4.10.0","webpack-dev-server":"^4.11.0","webpack-merge":"^5.8.0","write-good":"^1.0.8"},"link":true,"standardx":{"ignore":["build/**","dist/**","examples/**/shaders/*.js","**/vendor/**"]},"keywords":["3d","aframe","cardboard","components","oculus","three","three.js","rift","vive","vr","quest","meta","web-components","webvr","webxr"],"engines":{"node":">= 4.6.0","npm":">= 2.15.9"}}');
+module.exports = JSON.parse('{"name":"aframe-custom-canvas","version":"1.5.0c4","description":"A web framework for building virtual reality experiences. (CHANGES: force aframe to use a custom canvas)","homepage":"https://github.com/kazuyakuza/aframe-custom-canvas","main":"dist/aframe-master.js","scripts":{"dev":"cross-env INSPECTOR_VERSION=dev webpack serve --port 8080","dist":"node scripts/updateVersionLog.js && npm run dist:min && npm run dist:max","dist:max":"webpack --config webpack.config.js","dist:min":"webpack --config webpack.prod.config.js","docs":"markserv --dir docs --port 9001","preghpages":"node ./scripts/preghpages.js","ghpages":"ghpages -p gh-pages/","lint":"standardx -v | snazzy","lint:fix":"standardx --fix","prepush":"node scripts/testOnlyCheck.js","prerelease":"node scripts/release.js 1.5.0c3 1.5.0c4","start":"npm run dev","start:https":"npm run dev -- --server-type https","test":"karma start ./tests/karma.conf.js","test:docs":"node scripts/docsLint.js","test:firefox":"npm test -- --browsers Firefox","test:chrome":"npm test -- --browsers Chrome","test:nobrowser":"NO_BROWSER=true npm test","test:node":"mocha --ui tdd tests/node"},"repository":"kazuyakuza/aframe-custom-canvas","license":"MIT","files":["dist/*","docs/**/*","src/**/*","vendor/**/*","index.d.ts"],"dependencies":{"@ungap/custom-elements":"^1.1.0","buffer":"^6.0.3","custom-event-polyfill":"^1.0.6","debug":"ngokevin/debug#noTimestamp","deep-assign":"^2.0.0","load-bmfont":"^1.2.3","object-assign":"^4.0.1","present":"0.0.6","promise-polyfill":"^3.1.0","super-animejs":"^3.1.0","super-three":"0.160.0","three-bmfont-text":"dmarcos/three-bmfont-text#eed4878795be9b3e38cf6aec6b903f56acd1f695","webvr-polyfill":"^0.10.12"},"devDependencies":{"@babel/core":"^7.17.10","babel-loader":"^8.2.5","babel-plugin-istanbul":"^6.1.1","chai":"^4.3.6","chai-shallow-deep-equal":"^1.4.0","chalk":"^1.1.3","cross-env":"^7.0.3","css-loader":"^6.7.1","eslint":"^8.45.0","eslint-config-semistandard":"^17.0.0","eslint-config-standard-jsx":"^11.0.0","ghpages":"0.0.8","git-rev":"^0.2.1","glob":"^8.0.3","husky":"^0.11.7","jsdom":"^20.0.0","karma":"^6.4.0","karma-chai-shallow-deep-equal":"0.0.4","karma-chrome-launcher":"^3.1.1","karma-coverage":"^2.2.0","karma-env-preprocessor":"^0.1.1","karma-firefox-launcher":"^2.1.2","karma-mocha":"^2.0.1","karma-mocha-reporter":"^2.2.5","karma-sinon-chai":"^2.0.2","karma-webpack":"^5.0.0","markserv":"github:sukima/markserv#feature/fix-broken-websoketio-link","mocha":"^10.0.0","replace-in-file":"^2.5.3","shelljs":"^0.7.7","shx":"^0.2.2","sinon":"<12.0.0","sinon-chai":"^3.7.0","snazzy":"^5.0.0","standardx":"^7.0.0","style-loader":"^3.3.1","too-wordy":"ngokevin/too-wordy","webpack":"^5.73.0","webpack-cli":"^4.10.0","webpack-dev-server":"^4.11.0","webpack-merge":"^5.8.0","write-good":"^1.0.8"},"link":true,"standardx":{"ignore":["build/**","dist/**","examples/**/shaders/*.js","**/vendor/**"]},"keywords":["3d","aframe","cardboard","components","oculus","three","three.js","rift","vive","vr","quest","meta","web-components","webvr","webxr"],"engines":{"node":">= 4.6.0","npm":">= 2.15.9"}}');
 
 /***/ })
 

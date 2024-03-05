@@ -10,21 +10,21 @@ var warn = debug('components:renderer:warn');
  */
 module.exports.System = registerSystem('renderer', {
   schema: {
-    antialias: {default: 'auto', oneOf: ['true', 'false', 'auto']},
-    highRefreshRate: {default: utils.device.isOculusBrowser()},
-    logarithmicDepthBuffer: {default: 'auto', oneOf: ['true', 'false', 'auto']},
-    maxCanvasWidth: {default: 1920},
-    maxCanvasHeight: {default: 1920},
-    multiviewStereo: {default: false},
-    physicallyCorrectLights: {default: false},
-    exposure: {default: 1, if: {toneMapping: ['ACESFilmic', 'linear', 'reinhard', 'cineon']}},
-    toneMapping: {default: 'no', oneOf: ['no', 'ACESFilmic', 'linear', 'reinhard', 'cineon']},
-    precision: {default: 'high', oneOf: ['high', 'medium', 'low']},
-    anisotropy: {default: 1},
-    sortTransparentObjects: {default: false},
-    colorManagement: {default: true},
-    alpha: {default: true},
-    foveationLevel: {default: 1}
+    antialias: { default: 'auto', oneOf: ['true', 'false', 'auto'] },
+    highRefreshRate: { default: utils.device.isOculusBrowser() },
+    logarithmicDepthBuffer: { default: 'auto', oneOf: ['true', 'false', 'auto'] },
+    maxCanvasWidth: { default: 1920 },
+    maxCanvasHeight: { default: 1920 },
+    multiviewStereo: { default: false },
+    physicallyCorrectLights: { default: false },
+    exposure: { default: 1, if: { toneMapping: ['ACESFilmic', 'linear', 'reinhard', 'cineon'] } },
+    toneMapping: { default: 'no', oneOf: ['no', 'ACESFilmic', 'linear', 'reinhard', 'cineon'] },
+    precision: { default: 'high', oneOf: ['high', 'medium', 'low'] },
+    anisotropy: { default: 1 },
+    sortTransparentObjects: { default: false },
+    colorManagement: { default: true },
+    alpha: { default: true },
+    foveationLevel: { default: 1 }
   },
 
   init: function () {
@@ -37,8 +37,9 @@ module.exports.System = registerSystem('renderer', {
     var renderer = sceneEl.renderer;
 
     if (!data.physicallyCorrectLights) {
-      // [INTERATICA-BEGIN]
-      // renderer.useLegacyLights = !data.physicallyCorrectLights;
+      // [INTERATICA-BEGIN] legacy-lights
+      if (!sceneEl.useExternalCanvas)
+        renderer.useLegacyLights = !data.physicallyCorrectLights;
       // [INTERATICA-END]
     }
     renderer.toneMapping = THREE[toneMappingName + 'ToneMapping'];
@@ -110,9 +111,9 @@ module.exports.System = registerSystem('renderer', {
       xrSession.updateTargetFrameRate(targetRate).catch(function (error) {
         console.warn(
           'failed to set target frame rate of ' +
-            targetRate +
-            '. Error info: ' +
-            error
+          targetRate +
+          '. Error info: ' +
+          error
         );
       });
     }
@@ -129,7 +130,7 @@ module.exports.System = registerSystem('renderer', {
 // - sort front-to-back by z-depth from camera (this should minimize overdraw)
 // - otherwise leave objects in default order (object tree order)
 
-function sortFrontToBack (a, b) {
+function sortFrontToBack(a, b) {
   if (a.groupOrder !== b.groupOrder) {
     return a.groupOrder - b.groupOrder;
   }
@@ -142,7 +143,7 @@ function sortFrontToBack (a, b) {
 // Default sort for transparent objects:
 // - respect groupOrder & renderOrder settings
 // - otherwise leave objects in default order (object tree order)
-function sortRenderOrderOnly (a, b) {
+function sortRenderOrderOnly(a, b) {
   if (a.groupOrder !== b.groupOrder) {
     return a.groupOrder - b.groupOrder;
   }
@@ -153,7 +154,7 @@ function sortRenderOrderOnly (a, b) {
 // - respect groupOrder & renderOrder settings
 // - sort back-to-front by z-depth from camera
 // - otherwise leave objects in default order (object tree order)
-function sortBackToFront (a, b) {
+function sortBackToFront(a, b) {
   if (a.groupOrder !== b.groupOrder) {
     return a.groupOrder - b.groupOrder;
   }
